@@ -27,3 +27,19 @@ flask run
 ```python
 deactivate
 ```
+
+## Setting Up the Client
+**PREREQUISITES:** Make sure the client is running (get to step 5 above)
+1. Open a new terminal window and navigate to root directory.
+2. Activate the same virtual environment by running the command from step 3 above.
+3. **If you haven't ever run the client before,** install requests to this virtual environment by running the command below.
+```python
+pip install requests 
+```
+4. Now simply run the client program by executing command below. Make sure you have the client.py in the root directory. You should see "Response: here is your data" if successful
+```python
+py client.py
+```
+5. Deactivate the virtual environment by running the same command as in step 6 above.
+
+Bam! You made connection to the server from the client. You can also test this in your browser by typing the url listed after running the server (should be "http://127.0.0.1:5000/" and you will see the response)
