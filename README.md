@@ -1,5 +1,6 @@
 # How to set up the PoP project
 **PREREQUISITES:** Latest edition of python installed. client.py and server.py are pulled from git repo
+
 **Definitions:** root directory - root of where you want your project contents (i.e. C:\Users\jeff\infosec)
 ## Setting up the server
 1. Open terminal (cmd for windows or bash for mac) and navigate to desired root directory
