@@ -6,10 +6,10 @@ import jwt
 URL = "http://127.0.0.1:5000/"
 
 
-def authenticate_client_key():
+def authenticate_key():
 
     # Hit AD and retrieve JWT
-
+    key = ""
 
     # Decode key once received from AD 
     jwt.decode(key, 'secret', algorithms=['HS256'])
@@ -20,7 +20,7 @@ def authenticate_client_key():
 
 if __name__ == '__main__':
 
-    credentials = authenticate_client_key()
+    credentials = authenticate_key()
 
     # sending get request and saving the response as response object 
     r = requests.get(url = URL)
