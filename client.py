@@ -1,9 +1,20 @@
 # importing the requests library 
 import requests 
 import jwt
+import json
 
 # api-endpoint 
 URL = "http://127.0.0.1:5000/"
+
+public_key = ''
+private_key = ''
+
+def get_credentials(file_name):
+    cred_file = open(file_name)
+    credentials = json.load(cred_file)
+
+    public_key = credentials['public_key']
+    private_key = credentials['private_key']
 
 
 def authenticate_key():
@@ -28,6 +39,8 @@ def authenticate_key():
 
 if __name__ == '__main__':
 
+    get_credentials('client_cred.json')
+ 
     if authenticate_key() == True:
         print("server authenticated")
     else:

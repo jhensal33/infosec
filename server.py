@@ -1,35 +1,65 @@
 from flask import Flask
 import jwt
+import json
+import requests
 app = Flask(__name__)
+
+public_key = ''
+private_key = ''
+
+def get_credentials(file_name):
+    cred_file = open(file_name)
+    credentials = json.load(cred_file)
+
+    public_key = credentials['public_key']
+    private_key = credentials['private_key']
+
+# Ensure that client is trusted
+def authenticate_client(message):
+
+    # Decode key once received from AD 
+    jwt.decode(message, private_key, algorithms=['HS256'])
+
+    # return credentials
+    return True
+
 
 # test route
 @app.route('/')
 def hello_world():
     return 'here is your data'
 
-def authenticate_client_key():
 
-    # Receive key from MS ADAL
-    key = ""
+@app.route('/api/identify')
+def identify():
+    
+    # receive key from client
+    data = requests.json
+    print("JWT: "+ data)
 
-    # Decode key once received from AD 
-    jwt.decode(key, 'secret', algorithms=['HS256'])
+    encrypted_message = data
 
-    # return credentials
-    return True
+    # Decode message with Private key
+    message = jwt.decode(encrypted_message, private_key, algorithms=['HS256'])
 
-@app.route('/generate_key_pairs')
-def generate_key_pairs():
-    print("calling issuer for key pairs")
-
-    # Call issuer
+    # return message encrypted with public key
+    return_message = jwt.encode(message, public_key, algorithms=['HS256'])
 
 
 # Key route
-@app.route('/secure')
+@app.route('/api/secure')
 def process_request():
-    return "here is data"
+
+    data = requests.json
+
+    if authenticate_client(data) == True:
+        return "here is data"
+    else:
+        return "you are not authorized"
 
 
 if __name__ == '__main__':
+
+    get_credentials('server_cred.json')
+
     app.run()
