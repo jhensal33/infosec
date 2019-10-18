@@ -44,3 +44,15 @@ py client.py
 5. Deactivate the virtual environment by running the same command as in step 6 above.
 
 Bam! You made connection to the server from the client. You can also test this in your browser by typing the url listed after running the server (should be "http://127.0.0.1:5000/" and you will see the response)
+
+## Setting up the Middleware to SQL Server
+**Assuming the Server is all set up and pyodbc isn't installed**install pyodbc to this environment by running the command below.
+```python
+pip install pyodbc
+```
+1. Open up Sql Server Management Studio and connect to your server
+2. Find the server name (ex. RON\SQLEXPRESS)
+3. Find the database name (ex. TestDB)
+4. Get table name (ex. dbo.Person)
+5. TODO (enter the asked information once server.py is activated)
+
