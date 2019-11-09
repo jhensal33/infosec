@@ -1,7 +1,7 @@
-from flask import Flask
 import jwt
 import json
 import requests
+from flask import Flask, request
 app = Flask(__name__)
 
 public_key = ''
@@ -58,6 +58,15 @@ def process_request():
         return "you are not authorized"
 
 
+	headers = request.headers
+	decodedJwt = jwt.decode(headers.get('Auth'), 'secret', algorithms=['HS256'])
+	 	
+	if decodedJwt['TestSecret'] == 'TestPassword':
+		return 'Authorized, here is your data!'
+	else:
+		return 'Unauthorized, who do you know here?' 
+	
+		
 if __name__ == '__main__':
 
     get_credentials('server_cred.json')
