@@ -59,7 +59,7 @@ if __name__ == '__main__':
         print('Success!')
     elif nonce_r == 404:
         print('Not Found.')
-        
+
 
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
