@@ -3,25 +3,35 @@ import json
 import requests
 from flask import Flask, request
 app = Flask(__name__)
+from Crypto.PublicKey import RSA
+    
 
-public_key = ''
-private_key = ''
-
-def get_credentials(file_name):
-    cred_file = open(file_name)
-    credentials = json.load(cred_file)
-
-    public_key = credentials['public_key']
-    private_key = credentials['private_key']
+# Check if nonce was used before
+# return true if valid/unused
+def verify_nonce(nonce):
+    return True
 
 # Ensure that client is trusted
+# break JWT into components to check
 def authenticate_client(message):
 
     # Decode key once received from AD 
-    jwt.decode(message, private_key, algorithms=['HS256'])
+    jwt.decode(message, private_key, algorithms=['HS256']) 
 
-    # return credentials
-    return True
+    
+    
+    if verify_nonce("") == False:
+        print("nonce already used: possible replay attack")
+        return False
+    else:
+        return True
+
+# generates a cyrpto string of 32 bytes based on OS implementation
+@app.route('/get_nonce')
+def generate_nonce():
+    nonce = os.urandom(32)
+    # add nonce to db?
+    return nonce
 
 
 # test route
@@ -68,7 +78,5 @@ def process_request():
 	
 		
 if __name__ == '__main__':
-
-    get_credentials('server_cred.json')
 
     app.run()

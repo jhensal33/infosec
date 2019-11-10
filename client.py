@@ -3,39 +3,25 @@
 import requests 
 import jwt
 import json
+from Crypto.PublicKey import RSA
 
 def createJwt():
 	encodedJwt = jwt.encode({'TestSecret': 'TestPassword'}, 'secret', algorithm='HS256')
 	return encodedJwt 
 
-public_key = ''
-private_key = ''
-
-def get_credentials(file_name):
+def load_credentials(file_name):
     cred_file = open(file_name)
-    credentials = json.load(cred_file)
+    return RSA.import_key(cred_file.read())
 
-    public_key = credentials['public_key']
-    private_key = credentials['private_key']
+def create_credentials(file_name):
+    key = RSA.generate(2048)
+    cred_file = open(file_name, 'wb')
+    cred_file.write(key.export_key('PEM'))
+    cred_file.close
+
+    return key
 
 
-def authenticate_key():
-
-    # Receive JWT from server
-    public_key = ""
-
-    # encode message with public key 
-    message = "random"
-    encoded_message = jwt.encode(message, public_key, algorithms=['HS256'])
-    
-    # send encoded message to server
-    print(encoded_message)
-
-    # Decode key once received from AD 
-    decoded_message = jwt.decode(public_key, 'secret', algorithms=['HS256'])
-
-    # message should be equivalent
-    return message == decoded_message
 
 def sendRequest(encodedJwt):
 	# sending get request and saving the response as response object 
@@ -49,16 +35,33 @@ def sendRequest(encodedJwt):
 	# printing the output 
 	print("Response: %s"%r.text)
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
 
-    get_credentials('client_cred.json')
- 
-    if authenticate_key() == True:
-        print("server authenticated")
+    print("Starting Client....")
+
+    # ============= Key creation ===============
+    key = ""
+    if (input("Generate key pair?(y/n)").lower == "y"):
+        key = create_credentials("credentials.txt")
+        print("key written to credentials.txt")
     else:
-        print("server is adversary")
+        key = load_credentials(input("input file path to credentials:"))
 
 
+    # ============ send key to issuer =================
+    print("sending key to issuer")
+    # should return a jwt
+    
+
+    # =========== get/send nonce to JWT ===================
+    nonce_r = requests(URL + "/get_nonce")
+    if nonce_r == 200:
+        print('Success!')
+    elif nonce_r == 404:
+        print('Not Found.')
+        
+
+    # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
     r = requests.get(url = URL)
 
@@ -74,11 +77,3 @@ if __name__ == '__main__':
 	URL = "http://127.0.0.1:5000/"
 	
 	sendRequest(createJwt())
-	
-
-
-
-if __name__ == '__main__':
-	
-
-	

@@ -36,6 +36,8 @@ deactivate
 3. **If you haven't ever run the client before,** install requests to this virtual environment by running the command below.
 ```python
 pip install requests 
+
+pip install pycryptodome
 ```
 4. Now simply run the client program by executing command below. Make sure you have the client.py in the root directory. You should see "Response: here is your data" if successful
 ```python
