@@ -56,10 +56,10 @@ if __name__ == '__main__':
     # =========== get/send nonce to JWT ===================
     nonce_r = requests(URL + "/get_nonce")
     if nonce_r == 200:
-        print('Success!')
+        print('got a nonce')
+        nonce = nonce_r.content
     elif nonce_r == 404:
-        print('Not Found.')
-
+        raise Exception('absolute nonce-ense.')
 
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
