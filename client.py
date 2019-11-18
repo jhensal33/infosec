@@ -14,18 +14,6 @@ def generateKeys():
     #TODO send public key in json format
     return '{"key":"abckey1"}'
 
-def sendRequest(encodedJwt):
-    # sending get request and saving the response as response object 
-    r = requests.get(url = URL,  headers={'Auth': encodedJwt})
-	
-    if r.status_code == 200:
-        print('Request Successfully Received!')
-    else:
-        print('Error in Request.')
-
-    # printing the output 
-    print("Response: %s"%r.text)
-
 def sendPopPublicKey():
 
     #generate key and send to issuer
