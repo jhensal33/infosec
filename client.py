@@ -1,6 +1,7 @@
 import requests 
-import jwt 
+import jwt
 import json
+from Crypto.PublicKey import RSA
 
 def is_json(myjson):
     try:
@@ -9,11 +10,27 @@ def is_json(myjson):
         return False
     return True
 
-def generateKeys():
-    #TODO generate asymmetric key pair
-    #TODO send public key in json format
-    return '{"key":"abckey1"}'
+def load_credentials(file_name):
+    cred_file = open(file_name)
+    return RSA.import_key(cred_file.read())
 
+def create_credentials(file_name):
+    key = RSA.generate(2048)
+    cred_file = open(file_name, 'wb')
+    cred_file.write(key.export_key('PEM'))
+    cred_file.close
+
+    return key
+
+# generates a cyrpto string of 32 bytes based on OS implementation
+def generate_nonce():
+    nonce = os.urandom(32)
+    # add nonce to db?
+    return nonce
+
+
+# Sends client public key to issuer 
+# TODO: return JWT
 def sendPopPublicKey():
 
     #generate key and send to issuer
@@ -33,11 +50,42 @@ def sendPopPublicKey():
     else:
         print('Error in Server')
 
-if __name__ == '__main__':
-	
-    # local api-endpoint 
-    URL = "http://127.0.0.1:5000/"
+if __name__ == '__main__': 
 
-    sendPopPublicKey()
-    	
+    print("Starting Client....")
+
+    # ============= Key creation ===============
+    key = ""
+    if (input("Generate key pair?(y/n)").lower == "y"):
+        key = create_credentials("credentials.txt")
+        print("key written to credentials.txt")
+    else:
+        key = load_credentials(input("input file path to credentials:"))
+
+
+    # ============ send key to issuer =================
+    print("sending key to issuer")
+    # should return a jwt
+    
+
+    # =========== get nonce for JWT ===================
+    nonce_r = generate_nonce()
+    
+    # =========== Send JWT to server =================
+    # sending get request and saving the response as response object 
+    r = requests.get(url = URL)
+
+
+    # TODO: add status code
+    if r.status_code == 200:
+        print('Success!')
+    elif r.status_code == 404:
+        print('Not Found.')
+
+    # printing the output 
+    print("Response: %s"%r.text)
+
+	# local api-endpoint 
+	URL = "http://127.0.0.1:5000/"
 	
+	sendPopPublicKey()
