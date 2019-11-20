@@ -16,12 +16,15 @@ def load_credentials(file_name):
     return RSA.import_key(cred_file.read())
 
 def create_credentials(file_name):
-    key = RSA.generate(2048)
+    private_key = RSA.generate(2048)
+
+    public_key = private_key.publickey()
+
     cred_file = open(file_name, 'wb')
-    cred_file.write(key.export_key('PEM'))
+    cred_file.write(private_key.export_key('PEM'))
     cred_file.close
 
-    return key
+    return public_key
 
 # generates a cyrpto string of 32 bytes based on OS implementation
 def generate_nonce():
@@ -32,10 +35,12 @@ def generate_nonce():
 
 # Sends client public key to issuer 
 # TODO: return JWT
-def sendPopPublicKey():
+def sendPopPublicKey(pk):
 
     #generate key and send to issuer
-    jsonKey = '{"key":"abckey1"}'
+    jsonKey = '{"key":"' + str(pk) + '"}'
+
+    print("JSON KEY TO SEND: "+ str(jsonKey))
     
     r = requests.post(url = URL, data = jsonKey)
 
@@ -53,7 +58,7 @@ def sendPopPublicKey():
     elif r.status_code > 300 and r.status_code < 500:
         print('Error in Request')
     else:
-        print('Error in Server')
+        print('Error in Server' + str(r.status_code))
 
 if __name__ == '__main__': 
 
@@ -72,6 +77,7 @@ if __name__ == '__main__':
 
 
     # ============ send key to issuer =================
+
     print("sending key to issuer")
     # should return a jwt
     
@@ -82,4 +88,5 @@ if __name__ == '__main__':
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
 
-    sendPopPublicKey()
+    sendPopPublicKey(key.export_key('PEM').decode("utf-8"))
+
