@@ -1,6 +1,7 @@
 import requests 
 import jwt
 import json
+import os
 from Crypto.PublicKey import RSA
 
 def is_json(myjson):
@@ -34,7 +35,8 @@ def generate_nonce():
 def sendPopPublicKey():
 
     #generate key and send to issuer
-    jsonKey = generateKeys()
+    jsonKey = '{"key":"abckey1"}'
+    
     r = requests.post(url = URL, data = jsonKey)
 
     if r.status_code == 200:
@@ -52,15 +54,18 @@ def sendPopPublicKey():
 
 if __name__ == '__main__': 
 
+	# local api-endpoint
+    URL = "http://127.0.0.1:5000/"
+
     print("Starting Client....")
 
     # ============= Key creation ===============
     key = ""
-    if (input("Generate key pair?(y/n)").lower == "y"):
-        key = create_credentials("credentials.txt")
-        print("key written to credentials.txt")
-    else:
-        key = load_credentials(input("input file path to credentials:"))
+    # if (input("Generate key pair?(y/n)").lower == "y"):
+    key = create_credentials("credentials.txt")
+    print("key written to credentials.txt")
+    # else:
+    #     key = load_credentials(input("input file path to credentials:"))
 
 
     # ============ send key to issuer =================
@@ -81,11 +86,10 @@ if __name__ == '__main__':
         print('Success!')
     elif r.status_code == 404:
         print('Not Found.')
+    else:
+        print("fail: "+ str(r.status_code))
 
     # printing the output 
     print("Response: %s"%r.text)
 
-	# local api-endpoint 
-	URL = "http://127.0.0.1:5000/"
-	
-	sendPopPublicKey()
+    sendPopPublicKey()
