@@ -71,6 +71,9 @@ if __name__ == '__main__':
     key = ""
     # if (input("Generate key pair?(y/n)").lower == "y"):
     key = create_credentials("credentials.txt")
+    key = key.export_key('PEM').decode("utf-8")
+    key = key.replace("\r","")
+    key = key.replace("\n","")
     print("key written to credentials.txt")
     # else:
     #     key = load_credentials(input("input file path to credentials:"))
@@ -87,6 +90,6 @@ if __name__ == '__main__':
     
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
-
-    sendPopPublicKey(key.export_key('PEM').decode("utf-8"))
+    
+    sendPopPublicKey(key)
 
