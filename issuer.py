@@ -24,10 +24,12 @@ def issueJwt():
         jsonKey = json.loads(request.data)
         jwtWithKey = createJwt(jsonKey)
 
-    js = json.loads('{"jwt":"here"}')
-    js['jwt'] = jwtWithKey.decode('utf-8')
+        js = json.loads('{"jwt":"here"}')
+        js['jwt'] = jwtWithKey.decode('utf-8')
     
-    return js
+        return js
+    else:
+        return "FAIL"
 
 if __name__ == '__main__':
     app.run()

@@ -26,13 +26,6 @@ def authenticate_client(message):
     else:
         return True
 
-# generates a cyrpto string of 32 bytes based on OS implementation
-@app.route('/get_nonce')
-def generate_nonce():
-    nonce = os.urandom(32)
-    # add nonce to db?
-    return nonce
-
 
 # test route
 @app.route('/')

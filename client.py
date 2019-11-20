@@ -47,6 +47,9 @@ def sendPopPublicKey():
                 decodedJwt = jwt.decode(jsload['jwt'], 'secret', algorithms=['HS256'])
                 if decodedJwt['key'] == 'abckey1':
                     print('JWT successfully received from Issuer') 
+        else:
+            print("Content received isnt JSON")
+            return
     elif r.status_code > 300 and r.status_code < 500:
         print('Error in Request')
     else:
@@ -78,18 +81,5 @@ if __name__ == '__main__':
     
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
-    r = requests.get(url = URL)
-
-
-    # TODO: add status code
-    if r.status_code == 200:
-        print('Success!')
-    elif r.status_code == 404:
-        print('Not Found.')
-    else:
-        print("fail: "+ str(r.status_code))
-
-    # printing the output 
-    print("Response: %s"%r.text)
 
     sendPopPublicKey()
