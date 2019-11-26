@@ -2,7 +2,10 @@ import requests
 import jwt
 import json
 import os
+import sys
+import ast
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 
 def is_json(myjson):
     try:
@@ -24,6 +27,10 @@ def create_credentials(file_name):
     cred_file.write(private_key.export_key('PEM'))
     cred_file.close
 
+    pubkey_file = open("pubkey.txt", 'wb')
+    pubkey_file.write(public_key.export_key('PEM'))
+    pubkey_file.close
+
     return public_key
 
 # generates a cyrpto string of 32 bytes based on OS implementation
@@ -39,28 +46,46 @@ def sendPopPublicKey(pk):
 
     #generate key and send to issuer
     jsonKey = '{"key":"' + str(pk) + '"}'
-
-    print("JSON KEY TO SEND: "+ str(jsonKey))
     
-    r = requests.post(url = URL, data = jsonKey)
+    #TODO: use this, but need to encode pk somehow
+    #jsonKey = json.dumps({'key': pk})
+
+    print("JSON to send to issuer: " + str(jsonKey))
+    
+    r = requests.post(url = URL+'issue', data = jsonKey)
 
     if r.status_code == 200:
-        print('Request Successfully Received!')
-        print(r.content.decode('utf-8'))
+        print('Issuer Response Successfully Received!')
         if is_json(r.content.decode('utf-8')):
                 jsload = json.loads(r.content.decode('utf-8'))
-                decodedJwt = jwt.decode(jsload['jwt'], 'secret', algorithms=['HS256'])
-                if decodedJwt['key'] == 'abckey1':
-                    print('JWT successfully received from Issuer') 
+                # make sure a valid jwt is returned
+                try:  
+                    decodedJwt = jwt.decode(jsload['jwt'], 'secret', algorithms=['HS256'])                    
+                except Exception as inst:
+                    print('Unexpected error: ', sys.exc_info()[0])
+                    exit()
+                # return the jwt from issuer
+                return jsload['jwt']
         else:
-            print("Content received isnt JSON")
-            return
+            print('Content received is not JSON')
+            return 'error'
     elif r.status_code > 300 and r.status_code < 500:
         print('Error in Request')
+        return 'error'
     else:
-        print('Error in Server' + str(r.status_code))
+        print('Error in Server ' + str(r.status_code))
+        return 'error'
 
-if __name__ == '__main__': 
+def decryptMessage(encrypted):
+
+    f = open('credentials.txt', 'r')
+    key = RSA.import_key(f.read())
+
+    decryptor = PKCS1_OAEP.new(key)
+    decrypted = decryptor.decrypt(ast.literal_eval(str(encrypted)))
+    return decrypted
+
+if __name__ == '__main__':
 
 	# local api-endpoint
     URL = "http://127.0.0.1:5000/"
@@ -68,28 +93,38 @@ if __name__ == '__main__':
     print("Starting Client....")
 
     # ============= Key creation ===============
-    key = ""
+    pub_key = ""
     # if (input("Generate key pair?(y/n)").lower == "y"):
-    key = create_credentials("credentials.txt")
-    key = key.export_key('PEM').decode("utf-8")
-    key = key.replace("\r","")
-    key = key.replace("\n","")
-    print("key written to credentials.txt")
+    pub_key = create_credentials("privatekey.txt")
+    #key = key.export_key('PEM').decode("utf-8")
+    #key = key.replace("\r","")
+    #key = key.replace("\n","")
+    print("key written to privatekey.txt")
     # else:
     #     key = load_credentials(input("input file path to credentials:"))
 
-
     # ============ send key to issuer =================
 
-    print("sending key to issuer")
+    #print("sending key to issuer")
     # should return a jwt
-    
+    popJwt = sendPopPublicKey(pub_key)
+  
+    if popJwt == 'error':
+        print('error encountered')
+        exit()
+ 
+    print('Decoded jwt from issuer: ' + str(jwt.decode(popJwt, 'secret', algorithms=['HS256'])))
 
+    #print(popJwt)
+    
     # =========== get nonce for JWT ===================
-    nonce_r = generate_nonce()
+    #nonce_r = generate_nonce()
     
     # =========== Send JWT to server =================
     # sending get request and saving the response as response object 
     
-    sendPopPublicKey(key)
 
+    ''' code to test encryption/decryption from client/server
+    r = requests.get(url = 'http://127.0.0.1:5000/encrypt')
+    print(decryptMessage(r.content))
+    '''

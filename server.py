@@ -4,7 +4,7 @@ import requests
 from flask import Flask, request
 app = Flask(__name__)
 from Crypto.PublicKey import RSA
-    
+from Crypto.Cipher import PKCS1_OAEP
 
 # Check if nonce was used before
 # return true if valid/unused
@@ -25,7 +25,6 @@ def authenticate_client(message):
         return False
     else:
         return True
-
 
 # test route
 @app.route('/')
@@ -60,15 +59,24 @@ def process_request():
     else:
         return "you are not authorized"
 
-
-	headers = request.headers
-	decodedJwt = jwt.decode(headers.get('Auth'), 'secret', algorithms=['HS256'])
+    headers = request.headers
+    decodedJwt = jwt.decode(headers.get('Auth'), 'secret', algorithms=['HS256'])
 	 	
-	if decodedJwt['TestSecret'] == 'TestPassword':
-		return 'Authorized, here is your data!'
-	else:
-		return 'Unauthorized, who do you know here?' 
-	
+    if decodedJwt['TestSecret'] == 'TestPassword':
+        return 'Authorized, here is your data!'
+    else:
+        return 'Unauthorized, who do you know here?' 
+
+@app.route('/encrypt')
+def encryptMessage():
+    
+    f = open('pubkey.txt', 'r')
+    key = RSA.import_key(f.read())
+
+    encryptor = PKCS1_OAEP.new(key)
+    encrypted = encryptor.encrypt(b'aliens exist')
+    
+    return encrypted
 		
 if __name__ == '__main__':
 

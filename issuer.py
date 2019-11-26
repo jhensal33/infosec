@@ -1,6 +1,9 @@
 import jwt
 import json
 from flask import Flask, request, Response
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+import ast
 
 app = Flask(__name__)
 
@@ -16,7 +19,7 @@ def is_json(myjson):
         return False
     return True
 
-@app.route('/', methods=['GET','POST'])
+@app.route('/issue', methods=['GET','POST'])
 def issueJwt():
 
     if is_json(request.data):
