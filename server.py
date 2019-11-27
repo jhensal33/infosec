@@ -11,14 +11,19 @@ from Crypto.Cipher import PKCS1_OAEP
 def verify_nonce(nonce):
     return True
 
+def is_json(myjson):
+    try:
+        json_object = json.loads(myjson)
+    except ValueError as e:
+        return False
+    return True
+
 # Ensure that client is trusted
 # break JWT into components to check
 def authenticate_client(message):
 
     # Decode key once received from AD 
     jwt.decode(message, private_key, algorithms=['HS256']) 
-
-    
     
     if verify_nonce("") == False:
         print("nonce already used: possible replay attack")
@@ -26,13 +31,7 @@ def authenticate_client(message):
     else:
         return True
 
-# test route
-@app.route('/')
-def hello_world():
-    return 'here is your data'
-
-
-@app.route('/api/identify')
+@app.route('/server/identify')
 def identify():
     
     # receive key from client
@@ -49,7 +48,7 @@ def identify():
 
 
 # Key route
-@app.route('/api/secure')
+@app.route('/server/secure')
 def process_request():
 
     data = requests.json
@@ -67,17 +66,31 @@ def process_request():
     else:
         return 'Unauthorized, who do you know here?' 
 
-@app.route('/encrypt')
-def encryptMessage():
-    
-    f = open('pubkey.txt', 'r')
-    key = RSA.import_key(f.read())
+def encryptMessage(pk):
+    key = RSA.import_key(pk)
 
     encryptor = PKCS1_OAEP.new(key)
     encrypted = encryptor.encrypt(b'aliens exist')
     
     return encrypted
-		
+
+# take jwt
+@app.route('/server/authenticate', methods=['GET','POST'])
+def accept_client_jwt():
+    client_jwt = request.data.decode('utf-8')
+    # make sure a valid jwt is received
+    try:  
+        decodedJwt = jwt.decode(client_jwt, 'secret', algorithms=['HS256'])                    
+    except Exception as inst:
+        print('Unexpected error: ', sys.exc_info()[0])
+        exit()
+    
+    print(decodedJwt)
+    # return the jwt from issuer
+    encryptedMessage = encryptMessage(decodedJwt['key'])
+    print('Public key obtained from client!')
+    return encryptedMessage
+
 if __name__ == '__main__':
 
     app.run()
