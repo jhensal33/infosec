@@ -2,18 +2,17 @@
 **PREREQUISITES:** 
 Python 3.7+
 
-**Definitions:** root directory - root of where you want your project contents (i.e. C:\Users\jeff\infosec)
 ## Setting up the server
 1. Open terminal (cmd for Windows or bash for macOS) and navigate to desired root directory
 2. **If you haven't ever run the server before,** from desired root directory, create virtual environment by running the command below. 
 ```python
-py -m venv env
+py -m venv env 
 ```
-3. You should now have a folder venv (mine is ...\infosec\env). Activate the virtual environment from the root dir by running: 
 ```
 env\Scripts\activate 
 ```
-4. **If you haven't ever run the server before,** install Flask to this virtual environment by running the command below.
+
+4. Install Dependencies
 ```python
 pip install flask 
 pip install pyJWT
