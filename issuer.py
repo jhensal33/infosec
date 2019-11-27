@@ -8,7 +8,7 @@ import ast
 app = Flask(__name__)
 
 def createJwt(publicKey):
-    print('entering createjwt...')
+    print('Creating Jwt')
     encodedJwt = jwt.encode(publicKey, 'secret', algorithm='HS256')
     return encodedJwt
 
@@ -23,9 +23,9 @@ def is_json(myjson):
 def issueJwt():
 
     if is_json(request.data):
-        print("request is json!")
-        jsonKey = json.loads(request.data)
-        jwtWithKey = createJwt(jsonKey)
+        print("Client request is json!")
+        json_key = json.loads(request.data)
+        jwtWithKey = createJwt(json_key)
 
         js = json.loads('{"jwt":"here"}')
         js['jwt'] = jwtWithKey.decode('utf-8')
