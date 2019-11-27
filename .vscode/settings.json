@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "env\\Scripts\\python.exe"
+    "python.pythonPath": "/Users/axaypatel/Documents/GitHub/infosec/env/bin/python3",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
