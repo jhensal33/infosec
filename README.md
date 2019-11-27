@@ -57,7 +57,7 @@ export FLASK_APP=issuer.py (mac)
 ```
 
 4. Now, setup is done. Run the server by executing the command below. Make sure issuer.py is in your root directroy
-```python
+```
 flask run --port 5000
 ```
 
