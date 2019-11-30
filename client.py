@@ -15,24 +15,34 @@ def is_json(myjson):
     return True
 
 def load_credentials(file_name):
-    cred_file = open(file_name)
-    return RSA.import_key(cred_file.read())
+    try:
+        cred_file = open(file_name)
+        return RSA.import_key(cred_file.read())
+    except:
+        print("failed to find "+ str(file_name)+ "generating new cred file")
+        return create_credentials(file_name)
+
 
 def create_credentials(file_name):
-    private_key = RSA.generate(2048)
+    try:
+        private_key = RSA.generate(2048)
 
-    public_key = private_key.publickey()
+        public_key = private_key.publickey()
 
-    cred_file = open(file_name, 'wb')
-    cred_file.write(private_key.export_key('PEM'))
-    cred_file.close
+        cred_file = open(file_name, 'wb')
+        cred_file.write(private_key.export_key('PEM'))
+        cred_file.close
+    except:
+        print("failed to generate credentials")
+        exit()
 
     return public_key
+  
 
 # generates a cyrpto string of 32 bytes based on OS implementation
 def generate_nonce():
+    print("generating nonce for JWT")
     nonce = os.urandom(32)
-    # add nonce to db?
     return nonce
 
 # Sends client public key to issuer
@@ -42,7 +52,7 @@ def sendPubKeyToIssuer(pk):
     encoded_key = pk.export_key('PEM')
     json_key = json.dumps({'key': encoded_key.decode('utf-8')})
 
-    print("JSON to send to issuer: " + str(json_key))
+    # print("JSON to send to issuer: " + str(json_key))
     
     #TODO: username/password authentication
     r = requests.post(url = issuerURL+'issue', data = json_key)
@@ -72,9 +82,12 @@ def sendPubKeyToIssuer(pk):
         return 'error'
 
 def decryptMessage(encrypted):
-    f = open('privatekey.txt', 'r')
-    key = RSA.import_key(f.read())
-
+    try:
+        f = open('privatekey.txt', 'r')
+        key = RSA.import_key(f.read())
+    except:
+        print("failed to open key file")
+        exit()
     decryptor = PKCS1_OAEP.new(key)
     decrypted = decryptor.decrypt(ast.literal_eval(str(encrypted)))
     return decrypted
@@ -106,16 +119,16 @@ if __name__ == '__main__':
 
     # ============= Key creation ===============
     pub_key = ""
-    # if (input("Generate key pair?(y/n)").lower == "y"):
-    pub_key = create_credentials("privatekey.txt")
-    print("Private key written to privatekey.txt")
-    print('')
-    # else:
-    #     key = load_credentials(input("input file path to credentials:"))
+    if (input("Generate key pair?(y/n)") == "y"):
+        pub_key = create_credentials("privatekey.txt")
+        print("Private key written to privatekey.txt\n")
+        
+    else:
+        pub_key = load_credentials(input("input file path to credentials:"))
 
     # ============ send key to issuer =================
 
-    #print("sending key to issuer")
+    print("sending key to issuer")
     # should return a jwt
     pop_jwt = sendPubKeyToIssuer(pub_key)
   
@@ -123,13 +136,41 @@ if __name__ == '__main__':
         print('error encountered')
         exit()
  
-    print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])))
+    # print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])))
 
     # =========== get nonce for JWT ===================
-    #nonce_r = generate_nonce()
-    
+    # nonce_r = generate_nonce()
+
     # =========== Send JWT to server =================
     sendJwtToServer(pop_jwt)    
+
+
+    # =========== Once verified send commands ===========
+    print("you are verified, now you may send commands to DB\n")
+    action = ""
+    while(action != "EXIT"):
+
+
+        table = input("type table you want to modify")
+
+        condition = input("type anything in the where clause of your query")
+
+        action = input("type keyword to indicate instruction to execute: INSERT, DELETE_ROWS, DELETE_TABLE, SELECT, CREATE_TABLE, EXIT to stop running")
+
+        # TODO: Insert Crud operations here
+        # # Switch statement for handling actions
+        # crud_switcher = {
+            # "CREATE_TABLE":createTable()
+            # "DELETE_TABLE":
+            # "SELECT":
+            # "INSERT":
+            # DELETE_ROWS:
+        # }
+
+    # Exit program
+    print("exiting client application")
+
+
 
     ''' code to test encryption/decryption from client/server
     # server must be running
