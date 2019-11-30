@@ -44,8 +44,9 @@ def sendPubKeyToIssuer(pk):
 
     print("JSON to send to issuer: " + str(json_key))
     
+    #TODO: username/password authentication
     r = requests.post(url = issuerURL+'issue', data = json_key)
-
+    print(str(json.loads(r.content.decode('utf-8'))))
     if r.status_code == 200:
         print('')
         print('Issuer Response Successfully Received!')
@@ -54,12 +55,12 @@ def sendPubKeyToIssuer(pk):
                 jsload = json.loads(r.content.decode('utf-8'))
                 # make sure a valid jwt is returned
                 try:  
-                    decodedJwt = jwt.decode(jsload['jwt'], 'secret', algorithms=['HS256'])                    
+                    decodedJwt = jwt.decode(jsload['PopJwt'], 'secret', audience='server', issuer='issuer', algorithms=['HS256'])                    
                 except Exception as inst:
                     print('Unexpected error: ', sys.exc_info()[0])
                     exit()
                 # return the jwt from issuer
-                return jsload['jwt']
+                return jsload['PopJwt']
         else:
             print('Content received is not JSON')
             return 'error'
@@ -107,9 +108,6 @@ if __name__ == '__main__':
     pub_key = ""
     # if (input("Generate key pair?(y/n)").lower == "y"):
     pub_key = create_credentials("privatekey.txt")
-    #key = key.export_key('PEM').decode("utf-8")
-    #key = key.replace("\r","")
-    #key = key.replace("\n","")
     print("Private key written to privatekey.txt")
     print('')
     # else:
@@ -125,7 +123,7 @@ if __name__ == '__main__':
         print('error encountered')
         exit()
  
-    print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', algorithms=['HS256'])))
+    print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])))
 
     # =========== get nonce for JWT ===================
     #nonce_r = generate_nonce()

@@ -80,14 +80,14 @@ def accept_client_jwt():
     client_jwt = request.data.decode('utf-8')
     # make sure a valid jwt is received
     try:  
-        decodedJwt = jwt.decode(client_jwt, 'secret', algorithms=['HS256'])                    
+        decodedJwt = jwt.decode(client_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])                    
     except Exception as inst:
         print('Unexpected error: ', sys.exc_info()[0])
         exit()
     
     print(decodedJwt)
     # return the jwt from issuer
-    encryptedMessage = encryptMessage(decodedJwt['key'])
+    encryptedMessage = encryptMessage(decodedJwt['cnf']['jwk'])
     print('Public key obtained from client!')
     return encryptedMessage
 
