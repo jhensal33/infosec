@@ -6,6 +6,7 @@ import sys
 import ast
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+import hashlib
 
 def is_json(myjson):
     try:
@@ -37,20 +38,19 @@ def generate_nonce():
 
 # Sends client public key to issuer
 # Returns jwt with embedded public key
-def sendPubKeyToIssuer(pk):
+def sendPubKeyToIssuer(pk, u, p):
     #generate key and send to issuer
     encoded_key = pk.export_key('PEM')
-    json_key = json.dumps({'key': encoded_key.decode('utf-8')})
+    json_key = json.dumps({'key': encoded_key.decode('utf-8'), 'username':u, 'password':p})
 
     print("JSON to send to issuer: " + str(json_key))
     
     #TODO: username/password authentication
     r = requests.post(url = issuerURL+'issue', data = json_key)
-    print(str(json.loads(r.content.decode('utf-8'))))
+    #print(str(json.loads(r.content.decode('utf-8'))))
     if r.status_code == 200:
         print('')
-        print('Issuer Response Successfully Received!')
-        print('')
+        print('Issuer response received...')
         if is_json(r.content.decode('utf-8')):
                 jsload = json.loads(r.content.decode('utf-8'))
                 # make sure a valid jwt is returned
@@ -62,13 +62,14 @@ def sendPubKeyToIssuer(pk):
                 # return the jwt from issuer
                 return jsload['PopJwt']
         else:
-            print('Content received is not JSON')
+            print('Issuer response is not JSON')
+            print('Response from issuer: ' + str(r.content.decode('utf-8')))
             return 'error'
     elif r.status_code > 300 and r.status_code < 500:
         print('Error in Request')
         return 'error'
     else:
-        print('Error in Server ' + str(r.status_code))
+        print('Error in Issuer ' + str(r.status_code))
         return 'error'
 
 def decryptMessage(encrypted):
@@ -104,6 +105,15 @@ if __name__ == '__main__':
 
     print("Starting Client....")
 
+    print('Enter client username for issuer:')
+    u = input()
+    print('Enter client password for issuer:')
+    p = input()
+
+    hashed = hashlib.sha256()
+    hashed.update(p.encode('utf-8'))
+    p = str(hashed.hexdigest())
+
     # ============= Key creation ===============
     pub_key = ""
     # if (input("Generate key pair?(y/n)").lower == "y"):
@@ -117,10 +127,10 @@ if __name__ == '__main__':
 
     #print("sending key to issuer")
     # should return a jwt
-    pop_jwt = sendPubKeyToIssuer(pub_key)
+    pop_jwt = sendPubKeyToIssuer(pub_key, u, p)
   
     if pop_jwt == 'error':
-        print('error encountered')
+        print('Error encountered: Exiting...')
         exit()
  
     print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])))
