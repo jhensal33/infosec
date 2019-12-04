@@ -4,13 +4,24 @@ from flask import Flask, request, Response
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import ast
+import os
 
 app = Flask(__name__)
+
+# generates a cyrpto string of 32 bytes based on OS implementation
+def generate_nonce():
+    print("generating nonce for JWT")
+    nonce = os.urandom(32)
+    return nonce
+
 
 def createJwt(publicKey):
     print('Creating Jwt')
     #TODO: generate key and signature protect jwt?
-    encodedJwt = jwt.encode({'cnf': {'jwk':str(publicKey)}, 'aud':'server', 'iss':'issuer'}, 'secret', algorithm='HS256')
+
+    nonce = generate_nonce()
+
+    encodedJwt = jwt.encode({'cnf': {'jwk':str(publicKey)},'nonce':str(nonce), 'aud':'server', 'iss':'issuer'}, 'secret', algorithm='HS256')
     print('Jwt Created')
     return encodedJwt
 

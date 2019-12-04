@@ -9,6 +9,8 @@ from Crypto.Cipher import PKCS1_OAEP
 # Check if nonce was used before
 # return true if valid/unused
 def verify_nonce(nonce):
+
+    #TODO: add check to db for nonce
     return True
 
 def is_json(myjson):
@@ -18,18 +20,6 @@ def is_json(myjson):
         return False
     return True
 
-# Ensure that client is trusted
-# break JWT into components to check
-def authenticate_client(message):
-
-    # Decode key once received from AD 
-    jwt.decode(message, private_key, algorithms=['HS256']) 
-    
-    if verify_nonce("") == False:
-        print("nonce already used: possible replay attack")
-        return False
-    else:
-        return True
 
 @app.route('/server/identify')
 def identify():
@@ -85,6 +75,13 @@ def accept_client_jwt():
         print('Unexpected error: ', sys.exc_info()[0])
         exit()
     
+    # Verify Nonce not used
+    if verify_nonce(decodedJwt['nonce']) == False:
+        print("nonce already used: possible replay attack")
+        exit()
+    else:
+        print("nonce is unique")
+
     print(decodedJwt)
     # return the jwt from issuer
     encryptedMessage = encryptMessage(decodedJwt['cnf']['jwk'])

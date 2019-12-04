@@ -56,7 +56,7 @@ def sendPubKeyToIssuer(pk):
     
     #TODO: username/password authentication
     r = requests.post(url = issuerURL+'issue', data = json_key)
-    print(str(json.loads(r.content.decode('utf-8'))))
+    # print(str(json.loads(r.content.decode('utf-8'))))
     if r.status_code == 200:
         print('')
         print('Issuer Response Successfully Received!')
@@ -138,8 +138,6 @@ if __name__ == '__main__':
  
     # print('Decoded jwt from issuer: ' + str(jwt.decode(pop_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])))
 
-    # =========== get nonce for JWT ===================
-    # nonce_r = generate_nonce()
 
     # =========== Send JWT to server =================
     sendJwtToServer(pop_jwt)    
