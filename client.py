@@ -26,6 +26,7 @@ def load_credentials(file_name):
 
 def create_credentials(file_name):
     try:
+        print('Generating Key Pair...')
         private_key = RSA.generate(2048)
 
         public_key = private_key.publickey()
@@ -34,7 +35,7 @@ def create_credentials(file_name):
         cred_file.write(private_key.export_key('PEM'))
         cred_file.close
     except:
-        print("failed to generate credentials")
+        print("Failed to generate credentials")
         exit()
 
     return public_key
@@ -59,8 +60,7 @@ def sendPubKeyToIssuer(pk, u, p):
     r = requests.post(url = issuerURL+'issue', data = json_key)
     # print(str(json.loads(r.content.decode('utf-8'))))
     if r.status_code == 200:
-        print('')
-        print('Issuer response received...')
+        print('Issuer response received')
         if is_json(r.content.decode('utf-8')):
                 jsload = json.loads(r.content.decode('utf-8'))
                 # make sure a valid jwt is returned
@@ -98,12 +98,11 @@ def sendJwtToServer(pop_jwt):
     r = requests.post(url = serverURL+'server/authenticate', data = pop_jwt)
 
     if r.status_code == 200:
-        print('')
-        print('Server Response Successfully Received!')
-        print('Decrypting server message...')
+        print('Server response received!')
         decryptedMessage = decryptMessage(r.content).decode('utf-8')
-        print('Decrypted message: ' + decryptedMessage)
-        return 
+        print('Decrypted server challenge: ' + decryptedMessage)
+
+        return
     elif r.status_code > 300 and r.status_code < 500:
         print('Error in Request' + str(r.status_code))
         return 'error'
@@ -129,16 +128,16 @@ if __name__ == '__main__':
 
     # ============= Key creation ===============
     pub_key = ""
-    if (input("Generate key pair?(y/n)") == "y"):
+    if (input("Generate new key pair?(y/n)") == "y"):
         pub_key = create_credentials("privatekey.txt")
         print("Private key written to privatekey.txt\n")
         
     else:
-        pub_key = load_credentials(input("input file path to credentials:"))
+        pub_key = load_credentials(input("Input file path to credentials:"))
 
     # ============ send key to issuer =================
 
-    print("sending key to issuer")
+    print("Sending key to issuer")
     # should return a jwt
     pop_jwt = sendPubKeyToIssuer(pub_key, u, p)
   
@@ -150,21 +149,26 @@ if __name__ == '__main__':
 
 
     # =========== Send JWT to server =================
+    print('Sending Jwt to Server')
     sendJwtToServer(pop_jwt)    
 
 
     # =========== Once verified send commands ===========
-    print("you are verified, now you may send commands to DB\n")
-    action = ""
-    while(action != "EXIT"):
+    print('')
+    print('You are verified and may now send requests to protected resource.\n')
+    print('Enter the the first and last name of the person whose social security number you need.')
+    print('Type \'EXIT\' to exit the program.')
+    action = ''
+    while(action != "EXIT" and action != "exit"):
 
+        first_name = input("Enter the first name: ")
+        last_name = input("Enter the last name: ")
+        creds = json.dumps({'first':first_name, 'last':last_name})
 
-        table = input("type table you want to modify")
+        r = requests.post(url = serverURL+'server/verified', data = creds)        
+        print("Social Security Number: " + r.content.decode('utf-8'))
 
-        condition = input("type anything in the where clause of your query")
-
-        action = input("type keyword to indicate instruction to execute: INSERT, DELETE_ROWS, DELETE_TABLE, SELECT, CREATE_TABLE, EXIT to stop running")
-
+        action = input("Enter any key to continue or \'EXIT\' to exit: ")
         # TODO: Insert Crud operations here
         # # Switch statement for handling actions
         # crud_switcher = {
@@ -176,12 +180,4 @@ if __name__ == '__main__':
         # }
 
     # Exit program
-    print("exiting client application")
-
-
-
-    ''' code to test encryption/decryption from client/server
-    # server must be running
-    r = requests.get(url = 'http://127.0.0.1:5000/encrypt')
-    print(decryptMessage(r.content))
-    '''
+    print("Exiting client application")

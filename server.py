@@ -5,6 +5,8 @@ from flask import Flask, request
 app = Flask(__name__)
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+import pyodbc
+#from connecter import DBDriver
 
 # Check if nonce was used before
 # return true if valid/unused
@@ -19,7 +21,6 @@ def is_json(myjson):
     except ValueError as e:
         return False
     return True
-
 
 @app.route('/server/identify')
 def identify():
@@ -68,6 +69,7 @@ def encryptMessage(pk):
 @app.route('/server/authenticate', methods=['GET','POST'])
 def accept_client_jwt():
     client_jwt = request.data.decode('utf-8')
+
     # make sure a valid jwt is received
     try:  
         decodedJwt = jwt.decode(client_jwt, 'secret', audience='server', issuer='issuer', algorithms=['HS256'])                    
@@ -88,6 +90,67 @@ def accept_client_jwt():
     print('Public key obtained from client!')
     return encryptedMessage
 
+@app.route('/server/verified', methods=['GET','POST'])
+def grant_access():
+    creds = json.loads(request.data.decode('utf-8'))
+    print(str(creds))
+    con =     conn = pyodbc.connect(
+        "Driver={SQL Server Native Client 11.0};"
+        "Server=LAPTOP-52OI916U;"
+        "Database=master;"
+        "Trusted_Connection=yes;")
+    dao = DBDriver()
+    cursor = conn.cursor()
+    return dao.getNumber(conn, creds['first'], creds['last'])
+
+class DBDriver:
+    # change server and database per user, also change subsequent names in functions
+    conn = pyodbc.connect(
+        "Driver={SQL Server Native Client 11.0};"
+        "Server=LAPTOP-52OI916U;"
+        "Database=master;"
+        "Trusted_Connection=yes;")
+
+    # Create
+    def Add(value): 
+        cursor.execute("INSERT INTO master.dbo.PersonalInformation (ID, Name) VALUES (?, ?);", '3', 'test')
+        print(cursor.rowcount, "added value!")
+        conn.commit()
+
+    # parameterized request 
+    def getNumber(self, conn, first, last):
+        query = '''SELECT [PhoneNumber]
+  FROM [master].[dbo].[PersonalInformation]
+  WHERE  [FirstName] = 'first' AND [LastName] = 'last' '''
+        query = query.replace('first', first)
+        query = query.replace('last', last)
+        print(query)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        ssn = ''.join(cursor.fetchone())
+        conn.close
+        return ssn
+
+    # Read
+    def Read(self, conn):
+        print("Read")
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM master.dbo.PersonalInformation;")
+        for row in cursor:
+            print(row)
+        print()
+        conn.close()
+    # Update
+    def Update(args):
+        cursor.execute('UPDATE master.dbo.PersonalInformation SET column1 = newvalue, column2 = newvalue WHERE ID = 1;')
+        print(cursor.rowcount, "updated!")
+        conn.commit()
+    # Delete
+    def Delete(args):
+        cursor.execute('DELETE FROM master.dbo.PersonalInformation WHERE ID = 1;')
+        print(cursor.rowcount, "deleted!")
+        conn.commit
+        
 if __name__ == '__main__':
 
     app.run()
