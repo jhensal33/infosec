@@ -1,40 +1,48 @@
 import pyodbc
 
-# normally ask for server info but for now its default
+# Use this class to connect and request informaiton from the database
+class DatabaseConn:
+    
+    # Enter a string with the name of the laptop
+    def __init__(self, server):
+        self.conn = pyodbc.connect(
+            "Driver={SQL Server Native Client 11.0};"
+            "Server=" + server + ";"
+            "Database=master;"
+            "Trusted_Connection=yes;")
+        self.cursor = self.conn.cursor()
 
-# change server and database per user, also change subsequent names in functions
-conn = pyodbc.connect(
-    "Driver={SQL Server Native Client 11.0};"
-    "Server=DESKTOP-VQSKFMD;"
-    "Database=TESTDB;"
-    "Trusted_Connection=yes;")
 
-# Create
-def Add(value): 
-    cursor.execute("INSERT INTO TESTDB.dbo.TestTable (ID, Name) VALUES (?, ?);", '3', 'test')
-    print(cursor.rowcount, "added value!")
-    conn.commit()
+    # Create
+    def Add(self, value): 
+        self.cursor.execute("INSERT INTO master.dbo.TestTable (ID, Name) VALUES (?, ?);", '3', 'test')
+        print(self.cursor.rowcount, "added value!")
+        self.conn.commit()
 
-# Read
-def Read(conn):
-    print("Read")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM TESTDB.dbo.TestTable;")
-    for row in cursor:
-        print(row)
-    print()
-    conn.close()
-# Update
-def Update(args):
-    cursor.execute('UPDATE DBName.dbo.TableName SET column1 = newvalue, column2 = newvalue WHERE ID = 1;')
-    print(cursor.rowcount, "updated!")
-    conn.commit()
-# Delete
-def Delete(args):
-    cursor.execute('DELETE FROM DBName.dbo.TableName WHERE ID = 1;')
-    print(cursor.rowcount, "deleted!")
-    conn.commit()
+    # Read, return the entire list from Personal Information
+    def ReadAll(self):
+        self.cursor.execute("SELECT * FROM master.dbo.PersonalInformation;")
+        return self.cursor.fetchall()
+
+    def ReadOne(self, username):
+        self.cursor.execute("SELECT * FROM master.dbo.PersonalInformation WHERE username = " + username + ";")
+        return self.cursor.fetchone()
+        
+    # Update
+    def Update(self, args):
+        self.cursor.execute('UPDATE master.dbo.PersonalInformation SET column1 = newvalue, column2 = newvalue WHERE ID = 1;')
+        print(self.cursor.rowcount, "updated!")
+        self.conn.commit()
+    # Delete
+    def Delete(self, args):
+        self.cursor.execute('DELETE FROM master.dbo.PersonalInformation WHERE ID = 1;')
+        print(self.cursor.rowcount, "deleted!")
+        self.conn.commit()
 
 # Testing - passed it outputed the data inside table.
-cursor = conn.cursor()
-Read(conn)
+
+print("runs")
+test = DatabaseConn("DESKTOP-VQSKFMD")
+rows = test.ReadAll()
+for row in rows:
+    print(row)
