@@ -15,8 +15,21 @@ database_name = "DESKTOP-DAVID"
 # return true if valid/unused
 def verify_nonce(nonce):
 
-    #TODO: add check to db for nonce
-    return True
+    con =     conn = pyodbc.connect(
+        "Driver={SQL Server Native Client 11.0};"
+        "Server="+database_name+";"
+        "Database=master;"
+        "Trusted_Connection=yes;")
+    dao = DBDriver()
+
+    nonce = 31479440252208841774839265268216512915557365329506229865177313174700711327471555987666273602936135314059536762167237420357076140127062440523094621113425221506918606512561225397049756078703714092151654862834119264754407243932068318076316558889948166196202336052688560824491435102909923683149169431394013673132449598586034560581734713680647191974086781889023951666869281734711917256667854593286402950407616984798710825224750159021665279397297950386181792534393372672433787702672759777913724164653861148
+
+    return dao.Read_nonce(con, nonce)
+
+    # if nonce in valid_nonces:
+    #     return False
+    # else:
+    #     return True
 
 def is_json(myjson):
     try:
@@ -143,6 +156,22 @@ class DBDriver:
             print(row)
         print()
         conn.close()
+
+    def Read_nonce(self, conn, nonce):
+        print("Reading nonce")
+        print("searching for nonce: " +str(nonce))
+
+        nonce = str(nonce).replace("'","''")
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM master.dbo.LoginInfo WHERE UserKey='"+nonce+"';")
+        for row in cursor:
+            if len(row) > 0:
+                conn.close()
+                return False
+        conn.close()
+        return True
+
+
     # Update
     def Update(args):
         cursor.execute('UPDATE master.dbo.PersonalInformation SET column1 = newvalue, column2 = newvalue WHERE ID = 1;')
