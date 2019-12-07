@@ -22,14 +22,13 @@ def verify_nonce(nonce):
         "Trusted_Connection=yes;")
     dao = DBDriver()
 
-    nonce = 31479440252208841774839265268216512915557365329506229865177313174700711327471555987666273602936135314059536762167237420357076140127062440523094621113425221506918606512561225397049756078703714092151654862834119264754407243932068318076316558889948166196202336052688560824491435102909923683149169431394013673132449598586034560581734713680647191974086781889023951666869281734711917256667854593286402950407616984798710825224750159021665279397297950386181792534393372672433787702672759777913724164653861148
-
-    return dao.Read_nonce(con, nonce)
-
-    # if nonce in valid_nonces:
-    #     return False
-    # else:
-    #     return True
+    if dao.Read_nonce(con, nonce):
+        dao.write_nonce(con, nonce)
+        con.close()
+        return True
+    else:
+        con.close()
+        return False
 
 def is_json(myjson):
     try:
@@ -162,13 +161,27 @@ class DBDriver:
         print("searching for nonce: " +str(nonce))
 
         nonce = str(nonce).replace("'","''")
+
+        print("nonce formatted :" +str(nonce))
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM master.dbo.LoginInfo WHERE UserKey='"+nonce+"';")
         for row in cursor:
             if len(row) > 0:
                 conn.close()
                 return False
-        conn.close()
+        return True
+
+    def write_nonce(self, conn, nonce):
+        print("adding nonce "+str(nonce)+" to table")
+        nonce_trunc = str(nonce[0:15]).replace("'","''")
+        nonce = str(nonce).replace("'","''")
+
+        cursor = conn.cursor()
+
+        query = "INSERT INTO master.dbo.LoginInfo VALUES ('"+nonce+"','"+nonce_trunc+"','"+nonce_trunc+"')"
+        print(query)
+        cursor.execute(query)
+        conn.commit()
         return True
 
 
