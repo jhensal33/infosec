@@ -8,6 +8,9 @@ from Crypto.Cipher import PKCS1_OAEP
 import pyodbc
 #from connecter import DBDriver
 
+# Add server name from SQL server to access database
+database_name = "DESKTOP-DAVID"
+
 # Check if nonce was used before
 # return true if valid/unused
 def verify_nonce(nonce):
@@ -96,7 +99,7 @@ def grant_access():
     print(str(creds))
     con =     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
-        "Server=LAPTOP-52OI916U;"
+        "Server="+database_name+";"
         "Database=master;"
         "Trusted_Connection=yes;")
     dao = DBDriver()
@@ -107,7 +110,7 @@ class DBDriver:
     # change server and database per user, also change subsequent names in functions
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
-        "Server=LAPTOP-52OI916U;"
+        "Server="+database_name+";"
         "Database=master;"
         "Trusted_Connection=yes;")
 
