@@ -163,21 +163,13 @@ if __name__ == '__main__':
 
         first_name = input("Enter the first name: ")
         last_name = input("Enter the last name: ")
-        creds = json.dumps({'first':first_name, 'last':last_name})
+        action_nonce = generate_nonce()
+        creds = json.dumps({'first':first_name, 'last':last_name, 'nonce':str(action_nonce)})
 
         r = requests.post(url = serverURL+'server/verified', data = creds)        
         print("Social Security Number: " + r.content.decode('utf-8'))
 
         action = input("Enter any key to continue or \'EXIT\' to exit: ")
-        # TODO: Insert Crud operations here
-        # # Switch statement for handling actions
-        # crud_switcher = {
-            # "CREATE_TABLE":createTable()
-            # "DELETE_TABLE":
-            # "SELECT":
-            # "INSERT":
-            # DELETE_ROWS:
-        # }
-
+ 
     # Exit program
     print("Exiting client application")

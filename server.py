@@ -116,6 +116,9 @@ def grant_access():
         "Trusted_Connection=yes;")
     dao = DBDriver()
     cursor = conn.cursor()
+
+    verify_nonce(creds['nonce'])
+
     return dao.getNumber(conn, creds['first'], creds['last'])
 
 class DBDriver:
